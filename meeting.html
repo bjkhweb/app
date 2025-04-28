@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ฟอร์มนัดหมาย - Meeting</title>
+  <!-- เชื่อม Google Fonts สำหรับ Prompt -->
+  <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@400;500;600&display=swap" rel="stylesheet">
+  <!-- เชื่อม SweetAlert2 -->
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <style>
+    /* Styling */
+    body {
+      font-family: 'Prompt', sans-serif; /* ใช้ฟอนต์ Prompt */
+      background-color: #f4f7fa;
+      padding: 20px;
+      font-size: 16px; /* ขนาดฟอนต์พื้นฐาน */
+    }
+
+    h2 {
+      color: #333;
+      text-align: center;
+      margin-bottom: 20px;
+      font-size: 30px; /* ขนาดฟอนต์หัวเรื่อง */
+      font-weight: 600;
+    }
+
+    form {
+      background-color: white;
+      padding: 30px;
+      border-radius: 8px;
+      box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+      max-width: 600px;
+      margin: 0 auto;
+    }
+
+    .form-group {
+      margin-bottom: 20px;
+    }
+
+    label {
+      display: block;
+      font-weight: 500;
+      margin-bottom: 10px;
+      font-size: 16px; /* ขนาดฟอนต์ของ label */
+    }
+
+    input, select, button {
+      width: 100%;
+      padding: 15px;
+      margin: 5px 0 15px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      font-size: 16px; /* ขนาดฟอนต์ในช่องกรอกข้อมูล */
+    }
+
+    button {
+      background-color: #3498db; /* สีฟ้า */
+      color: white;
+      font-size: 18px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+    }
+
+    button:disabled {
+      background-color: #ccc;
+    }
+
+    button:hover {
+      background-color: #2980b9; /* สีฟ้าเข้ม */
+    }
+  </style>
+</head>
+<body>
+
+<h2>ฟอร์มนัดหมาย - Meeting</h2>
+
+<form id="appointment-form">
+  <div class="form-group">
+    <label for="name">ชื่อ</label>
+    <input type="text" id="name" name="name" required>
+  </div>
+
+  <div class="form-group">
+    <label for="preferred_date">วันที่ที่สะดวก</label>
+    <input type="date" id="preferred_date" name="preferred_date" required>
+  </div>
+
+  <div class="form-group">
+    <label for="time">เวลาที่ต้องการ</label>
+    <select id="time" name="time" required>
+      <option value="">เลือกเวลา</option>
+      <option value="ไม่ว่าง">ไม่ว่าง</option>
+      <option value="18:00">18:00</option>
+      <option value="19:00">19:00</option>
+      <option value="19:30">19:30</option>
+      <option value="20:00">20:00</option>
+    </select>
+  </div>
+
+  <div class="form-group" id="meeting-method-group">
+    <label for="meeting_method">ช่องทาง Meeting</label>
+    <select id="meeting_method" name="meeting_method" required>
+      <option value="">เลือกช่องทาง</option>
+      <option value="Google Meet">Google Meet</option>
+      <option value="Line Meeting">Line Meeting</option>
+      <option value="Clubhouse">Clubhouse</option>
+      <option value="Discord">Discord</option>
+    </select>
+  </div>
+
+  <div class="form-group" id="discord-message" class="discord-message" style="display: none;">
+    <p>กรณีเล่นเกมเลือก Discord เท่านั้น</p>
+  </div>
+
+  <button type="submit" id="submit-btn">ส่งฟอร์ม</button>
+</form>
+
+<script>
+  const scriptURL = 'https://script.google.com/macros/s/AKfycby3I8lNWNQiA8zzCGQ4Eg1uXvJFsW7H-gU0UzwVps0X6E8WqdjcWMmDo-61tFHR3k5WtQ/exec';  // เปลี่ยน URL ที่นี่
+  const submitBtn = document.getElementById('submit-btn');
+  const meetingMethodSelect = document.getElementById('meeting_method');
+  const discordMessage = document.getElementById('discord-message');
+  const timeSelect = document.getElementById('time');
+  
+  // ฟังก์ชั่นสำหรับการส่งฟอร์ม
+  document.getElementById('appointment-form').addEventListener('submit', function(e) {
+    e.preventDefault(); // ป้องกันการ submit แบบปกติ
+
+    submitBtn.disabled = true;
+    submitBtn.textContent = 'กำลังส่ง...';
+
+    // แสดง SweetAlert สำหรับ "กำลังส่ง"
+    Swal.fire({
+      title: 'กำลังส่งข้อมูล...',
+      allowOutsideClick: false,
+      showConfirmButton: false,
+      didOpen: () => {
+        Swal.showLoading();
+      }
+    });
+
+    const formData = new FormData(document.getElementById('appointment-form'));
+
+    fetch(scriptURL, {
+      method: 'POST',
+      body: formData  // ส่งข้อมูลในรูปแบบ FormData
+    })
+    .then(response => response.json())
+    .then(result => {
+      if (result.result === 'success') {
+        // เมื่อส่งสำเร็จ
+        Swal.fire({
+          icon: 'success',
+          title: 'ส่งข้อมูลสำเร็จ!',
+          text: 'ขอบคุณค่ะ 🎉',
+          showConfirmButton: false,
+          timer: 2000
+        }).then(() => {
+          document.getElementById('appointment-form').reset(); // ล้างข้อมูลในฟอร์ม
+        });
+      } else {
+        // หากเกิดข้อผิดพลาด
+        Swal.fire({
+          icon: 'error',
+          title: 'เกิดข้อผิดพลาด!',
+          text: result.message,
+          showConfirmButton: true
+        });
+      }
+
+      submitBtn.disabled = false;
+      submitBtn.textContent = 'ส่งฟอร์ม';
+    })
+    .catch(error => {
+      // หากเกิดข้อผิดพลาดในเครือข่าย
+      Swal.fire({
+        icon: 'error',
+        title: 'เกิดข้อผิดพลาด!',
+        text: 'กรุณาลองใหม่อีกครั้ง',
+        showConfirmButton: true
+      });
+      submitBtn.disabled = false;
+      submitBtn.textContent = 'ส่งฟอร์ม';
+    });
+  });
+
+  // ตรวจสอบการเลือกเวลา
+  timeSelect.addEventListener('change', function() {
+    const timeValue = timeSelect.value;
+    const meetingOptions = [
+      { value: 'Google Meet', label: 'Google Meet' },
+      { value: 'Line Meeting', label: 'Line Meeting' },
+      { value: 'Clubhouse', label: 'Clubhouse' },
+      { value: 'Discord', label: 'Discord' }
+    ];
+
+    // ถ้าเลือก "ไม่ว่าง"
+    if (timeValue === 'ไม่ว่าง') {
+      meetingMethodSelect.innerHTML = '<option value="ไม่ว่าง">ไม่ว่าง</option>';  // แสดงแค่ "ไม่ว่าง"
+    } else {
+      meetingMethodSelect.innerHTML = '<option value="">เลือกช่องทาง</option>';  // รีเซ็ต
+      meetingOptions.forEach(option => {
+        const optionElement = document.createElement('option');
+        optionElement.value = option.value;
+        optionElement.textContent = option.label;
+        meetingMethodSelect.appendChild(optionElement);  // เพิ่มตัวเลือกทั้งหมด
+      });
+    }
+  });
+
+  // เมื่อเลือกช่องทาง Meeting Discord
+  meetingMethodSelect.addEventListener('change', function() {
+    if (meetingMethodSelect.value === 'Discord') {
+      discordMessage.style.display = 'block';
+    } else {
+      discordMessage.style.display = 'none';
+    }
+  });
+</script>
+
+</body>
+</html>
